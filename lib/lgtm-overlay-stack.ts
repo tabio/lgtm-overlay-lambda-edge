@@ -17,6 +17,7 @@ export class LgtmOverlayStack extends cdk.Stack {
 
     // cloudfrontにLambda@Edgeを設定
     // cloudfront.experimental.EdgeFunctionがnodejsfunctionに対応していないのでTypeScriptで書けない
+    // CloudFront Functionsに置き換えることでコスト下げられる（一方で制約もできる）
     const lambdaEdgeViewerRequest = new cdk.aws_cloudfront.experimental.EdgeFunction(
       this,
       "LgtmOverlayLambdaEdgeViewerRequest",
@@ -41,8 +42,9 @@ export class LgtmOverlayStack extends cdk.Stack {
         "cd /asset-output",
         "npm install querystring --omit=dev --prefix .",
         "npm install @aws-sdk/client-s3 --omit=dev --prefix .",
-        // arm環境でビルドするとsharpがエラーを吐くため、x64でインストールするようにする
+        // 利用環境によって異なるので、ドキュメントを参照して調整(https://sharp.pixelplumbing.com/install#aws-lambda)
         "npm install sharp --arch=x64 --platform=linux --omit=dev --prefix .",
+        // "npm install --platform=darwin --arch=arm64 sharp --omit=dev --prefix ."
       ].join(" && "),
     ];
 
@@ -67,9 +69,6 @@ export class LgtmOverlayStack extends cdk.Stack {
         architecture: cdk.aws_lambda.Architecture.X86_64, // Lambda@Edgeはarm対応していないため
       },
     );
-
-    // lambdaEdgeOriginResponseにS3に対するGetObject権限を付与
-    bucket.grantReadWrite(lambdaEdgeOriginResponse);
 
     // s3に対して、CloudFrontのOriginとして設定
     const distribution = new cdk.aws_cloudfront.Distribution(

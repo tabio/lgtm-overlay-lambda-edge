@@ -16,13 +16,12 @@ const BUCKET = "example-bucket";
 exports.handler = async (event, context, callback) => {
   let response = event.Records[0].cf.response;
 
-  // OriginaResponseはOriginであるS3側にファイルがあったかどうかを判断してその結果をStatus Codeで返す
+  // S3側にオブジェクト(加工済み)があったかどうかを判断してその結果をStatus Codeで返す
   if (response.status === 200 || response.status === "200") {
     callback(null, response);
     return;
   }
 
-  // overlay画像を生成する
   let request = event.Records[0].cf.request;
 
   // ex.) /team-name/images/small/hoge.png
@@ -35,7 +34,7 @@ exports.handler = async (event, context, callback) => {
   // 新たにS3に保存するためのキー
   const key = path.substring(1);
 
-  // オリジナル画像のキー
+  // 加工前の画像(オリジナル)のオブジェクトのパス
   let pattern = new RegExp(`\/${overlayType}`);
   let originalKey = key.replace(pattern, "");
 
@@ -92,7 +91,7 @@ exports.handler = async (event, context, callback) => {
       .toFormat(requiredFormat)
       .toBuffer();
 
-    // s3に保存
+    // 加工後の画像をs3に保存
     const putCommand = new PutObjectCommand({
       Bucket: BUCKET,
       Key: key,

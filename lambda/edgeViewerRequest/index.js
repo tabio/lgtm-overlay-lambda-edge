@@ -31,8 +31,8 @@ exports.handler = (event, context, callback) => {
   url.push(imageName + "." + extension);
   fwdUri = url.join("/");
 
+  // CloudFrontのキャッシュに対して、問い合わせするURI(加工済みの画像のパス）に書き換え
   // ex. /team_name/images/small/hoge.png
-  // s3に問い合わせするURIを書き換え
   request.uri = fwdUri;
 
   callback(null, request);
