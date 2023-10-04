@@ -43,8 +43,8 @@ export class LgtmOverlayStack extends cdk.Stack {
         "npm install querystring --omit=dev --prefix .",
         "npm install @aws-sdk/client-s3 --omit=dev --prefix .",
         // 利用環境によって異なるので、ドキュメントを参照して調整(https://sharp.pixelplumbing.com/install#aws-lambda)
+        // なおrancher desktopを使っていると上手くいかなかった
         "npm install sharp --arch=x64 --platform=linux --omit=dev --prefix .",
-        // "npm install --platform=darwin --arch=arm64 sharp --omit=dev --prefix ."
       ].join(" && "),
     ];
 
@@ -69,6 +69,9 @@ export class LgtmOverlayStack extends cdk.Stack {
         architecture: cdk.aws_lambda.Architecture.X86_64, // Lambda@Edgeはarm対応していないため
       },
     );
+
+    // lambdaEdgeOriginResponseにS3に対するGetObject権限を付与
+    bucket.grantReadWrite(lambdaEdgeOriginResponse);
 
     // s3に対して、CloudFrontのOriginとして設定
     const distribution = new cdk.aws_cloudfront.Distribution(
