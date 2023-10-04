@@ -33,6 +33,17 @@ export class LgtmOverlayStack extends cdk.Stack {
       },
     );
 
+    // CloudFront Functionsを利用する場合
+    // const cloudFrontFunctionViewerRequest = new cdk.aws_cloudfront.Function(
+    //   this,
+    //   `LgtmOverlayCFFnc`,
+    //   {
+    //     code: cdk.aws_cloudfront.FunctionCode.fromFile({
+    //       filePath: path.join(__dirname, "../lambda/cloudFrontFunctionViewerRequest/index.js"),
+    //     }),
+    //   },
+    // );
+
     // sharpがlambdaで利用できるように
     const originResponseCommand = [
       "bash",
@@ -81,6 +92,13 @@ export class LgtmOverlayStack extends cdk.Stack {
         defaultBehavior: {
           origin: new cdk.aws_cloudfront_origins.S3Origin(bucket),
           viewerProtocolPolicy: cdk.aws_cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          // CloudFront Functionを使う場合
+          // functionAssociations: [
+          //   {
+          //     eventType: cdk.aws_cloudfront.FunctionEventType.VIEWER_REQUEST,
+          //     function: cloudFrontFunctionViewerRequest,
+          //   }
+          // ],
           edgeLambdas: [
             {
               eventType: cdk.aws_cloudfront.LambdaEdgeEventType.VIEWER_REQUEST,
